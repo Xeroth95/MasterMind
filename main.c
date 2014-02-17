@@ -37,7 +37,7 @@
 #define clrscr() system("clear");
 #elif __BORLANDC__ && __MSDOS__
 #include <conio.h>
-#elif __WIN32__ || __MSC_VER
+#elif __WIN32__ || __MSC_VER || __POCC__
 #define clrscr() system("cls");
 #else
 #error "Diese Platform wird nicht unterstuetzt"
@@ -61,8 +61,7 @@ void print_table(char table[][2][5]);
 int safe_strlen(char *str);
 void print_score(struct score *score);
 void get_pins(char *cmp1, char *cmp2, char *pins);
-
-void print_help();
+void print_help(void);
 
 int num_rounds = NUM_ROUNDS, num_guesses = NUM_GUESSES;
 
@@ -94,7 +93,7 @@ int main(int argc, char **argv)
 
         while (round < num_rounds) {
                 guess = 0;
-                { int i, j;
+                { int i;
                         for (i = 0; i < num_guesses; i++) {
                                 memcpy(table[i][0], "----", 5);
                                 memcpy(table[i][1], "????", 5);
@@ -193,7 +192,9 @@ void update_table(char *data1, char *data2, char table[][2][5], int entry)
 int safe_strlen(char *str) {
         int i = -1;
         while (i++ < 4)
-                if (*(str++) = '\0') return i;
+                if (*(str++) == '\0')
+			break;
+	return i;
 }
 
 void print_score(struct score *score)
@@ -223,7 +224,7 @@ void get_pins(char *cmp1, char *cmp2, char *pins)
         }
 }
 
-void print_help()
+void print_help(void)
 {
         printf("USAGE: MasterMind <-r|--rounds> <-g|--guesses> <-h|--help>\n\n");
         printf("This is a game where you guess a code which contains only the characters:\n '!', '-', '+', '#'\n This is more or less a implementation of the game MasterMind (\"http://en.wikipedia.org/wiki/Mastermind_(board_game)\")\n");
