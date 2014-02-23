@@ -60,8 +60,12 @@ void update_table(const char *choice, const char *pins, char table[][2][5], int 
 void print_table(char table[][2][5]);
 int safe_strlen(char *str);
 void print_score(struct score *score);
+<<<<<<< HEAD
 void get_pins(const char *cmp1, const char *cmp2, char *pins);
 
+=======
+void get_pins(char *cmp1, char *cmp2, char *pins);
+>>>>>>> 525043060587cbe849b18bfd985ad4117fcdb12a
 void print_help(void);
 
 int num_rounds = NUM_ROUNDS, num_guesses = NUM_GUESSES;
@@ -193,7 +197,12 @@ void update_table(const char *choice, const char *pins, char table[][2][5], int 
 int safe_strlen(char *str) {
         int i = -1;
         while (i++ < 4)
+<<<<<<< HEAD
                 if (*(str++) == '\0') return i;
+=======
+                if (*(str++) == '\0')
+			break;
+>>>>>>> 525043060587cbe849b18bfd985ad4117fcdb12a
 	return i;
 }
 
