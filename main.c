@@ -20,10 +20,12 @@
 #include <time.h>
 #include <string.h>
 
-#define RED ('!')
-#define GREEN ('=')
-#define BLUE ('+')
-#define BROWN ('#')
+#define RED ('a')
+#define GREEN ('b')
+#define BLUE ('c')
+#define BROWN ('d')
+#define YELLOW ('e')
+#define PINK ('f')
 
 #define BLACK ('x')
 #define WHITE ('o')
@@ -37,13 +39,11 @@
 #define clrscr() system("clear");
 #elif __BORLANDC__ && __MSDOS__
 #include <conio.h>
-#elif __WIN32__ || __MSC_VER
+#elif __WIN32__ || __MSC_VER || __POCC__
 #define clrscr() system("cls");
 #else
 #error "Diese Platform wird nicht unterstuetzt"
 #endif
-
-// TODO: make it changable through command arguments
 
 #define NUM_GUESSES 10
 #define NUM_ROUNDS 8
@@ -56,17 +56,17 @@ struct score
 
 void generateCode(char *buf);
 int is_valid(char *buf);
-void update_table(char *data1, char *data2, char table[][2][5], int entry);
+void update_table(const char *choice, const char *pins, char table[][2][5], int entry);
 void print_table(char table[][2][5]);
 int safe_strlen(char *str);
 void print_score(struct score *score);
-void get_pins(char *cmp1, char *cmp2, char *pins);
+void get_pins(const char *cmp1, const char *cmp2, char *pins);
 
-void print_help();
+void print_help(void);
 
 int num_rounds = NUM_ROUNDS, num_guesses = NUM_GUESSES;
 
-const char COLORS[6] = { RED, GREEN, BLUE, BROWN, BLACK, WHITE };
+const char COLORS[8] = { RED, GREEN, BLUE, BROWN, YELLOW, PINK, BLACK, WHITE };
 
 int main(int argc, char **argv)
 {
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
         while (round < num_rounds) {
                 guess = 0;
-                { int i, j;
+                { int i;
                         for (i = 0; i < num_guesses; i++) {
                                 memcpy(table[i][0], "----", 5);
                                 memcpy(table[i][1], "????", 5);
@@ -162,7 +162,7 @@ void generateCode(char *buf)
 {
         int i = -1;
         while (++i < 4)
-                buf[i] = COLORS[rand()%4];
+                buf[i] = COLORS[rand()%6];
         
 }
 
@@ -179,21 +179,22 @@ int is_valid(char *choice)
         if ( strlen(choice) != 4 ) return false;
         int ok = true;
         do {
-                ok &= (*choice == RED) || (*choice == GREEN) || (*choice == BLUE) || (*choice == BROWN);
+                ok &= (*choice == RED) || (*choice == GREEN) || (*choice == BLUE) || (*choice == BROWN) || (*choice == PINK) || (*choice == YELLOW);
         } while ( ok && *(++choice) != '\0' );
         return ok;
 }
 
-void update_table(char *data1, char *data2, char table[][2][5], int entry)
+void update_table(const char *choice, const char *pins, char table[][2][5], int entry)
 {
-        memcpy(&(table[entry][0]), data1, 5);
-        memcpy(&(table[entry][1]), data2, 5);
+        memcpy(&(table[entry][0]), choice, 5);
+        memcpy(&(table[entry][1]), pins, 5);
 }
 
 int safe_strlen(char *str) {
         int i = -1;
         while (i++ < 4)
-                if (*(str++) = '\0') return i;
+                if (*(str++) == '\0') return i;
+	return i;
 }
 
 void print_score(struct score *score)
@@ -201,31 +202,34 @@ void print_score(struct score *score)
         printf("%19d - %-d\n", score->p1, score->p2);
 }
 
-void get_pins(char *cmp1, char *cmp2, char *pins)
+void get_pins(const char *choice, const char *code, char *pins)
 {
         int i,j, k=0;
-        char cmp2_c[5];
+        char code_c[5], choice_c[5];
         strcpy(pins, "----");
-        memcpy(cmp2_c, cmp2, 5);
+        memcpy(code_c, code, 5);
+	memcpy(choice_c, choice, 5);
         for (i = 0; i < 4; i++)
-                if (cmp2_c[i] == cmp1[i]) {
+                if (choice_c[i] == code_c[i]) {
                         pins[k++] = BLACK;
-                        cmp2_c[i] = '?';
+                        code_c[i] = '?';
+			choice_c[i] = '$';
                 }
         for (i = 0; i < 4; i++) {
                 for(j = 0; j < 4; j++) {
-                        if (cmp1[i] == cmp2_c[j]) {
+                        if (choice_c[i] == code_c[j]) {
                                 pins[k++] = WHITE;
-                                cmp2_c[j] = '?';
+                                code_c[j] = '?';
+				choice_c[i] = '$';
                                 break;
                         }
                 }
         }
 }
 
-void print_help()
+void print_help(void)
 {
         printf("USAGE: MasterMind <-r|--rounds> <-g|--guesses> <-h|--help>\n\n");
         printf("This is a game where you guess a code which contains only the characters:\n '!', '-', '+', '#'\n This is more or less a implementation of the game MasterMind (\"http://en.wikipedia.org/wiki/Mastermind_(board_game)\")\n");
-               printf("configuration options:\n\n-r, --rounds: configures the round count\n-g, --guesses: configures the count of guesses per round\n");
+        printf("configuration options:\n\n-r, --rounds: configures the round count\n-g, --guesses: configures the count of guesses per round\n");
 }
